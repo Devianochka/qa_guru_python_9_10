@@ -1,61 +1,88 @@
 from selene import browser, be, have
+
+
 from controls import resource
+from datetime import datetime
 
 
 class RegistrationPage:
+    def fill_first_name(self, dataUser):
+        browser.element('#firstName').click().should(be.blank).type(dataUser.firstName)
 
-    def open_url(self, url):
-        browser.open(url)
+    def fill_last_name(self, dataUser):
+        browser.element('#lastName').click().should(be.blank).type(dataUser.lastName)
 
-    def fill_first_name(self, firstName):
-        browser.element('#firstName').click().should(be.blank).type(firstName)
+    def fill_email(self, dataUser):
+        browser.element('#userEmail').click().should(be.blank).type(dataUser.email)
 
-    def fill_last_name(self, lastName):
-        browser.element('#lastName').click().should(be.blank).type(lastName)
+    def choice_gender(self, dataUser):
+        gender_dict = {
+            'Male': 1,
+            'Female': 2,
+            'Other': 3
+        }
+        browser.element(f'[for="gender-radio-{gender_dict[dataUser.gender]}"]').click()
 
-    def fill_email(self, email):
-        browser.element('#userEmail').click().should(be.blank).type(email)
+    def fill_number_phone(self, dataUser):
+        browser.element('#userNumber').click().should(be.blank).type(dataUser.phoneNumber)
 
-    def choice_gender(self):
-        browser.element('[for="gender-radio-2"]').click()
+    def choice_birthday(self, dataUser):
+        date_text = dataUser.dateBirth
+        date_format = '%d %B,%Y'
+        date_formated = str(datetime.strptime(date_text, date_format).date()).split('-')
+        date_formated = [int(i) for i in date_formated]
+        date_formated[2] = str(date_formated[2]).rjust(3, '0')
 
-    def fill_number_phone(self, number):
-        browser.element('#userNumber').click().should(be.blank).type(number)
-
-    def choice_birthday(self):
         browser.element('[id="dateOfBirthInput"]').click()
         browser.element('.react-datepicker__year-select').click()
-        browser.element('[value="2001"]').click()
+        browser.element(f'[value="{date_formated[0]}"]').click()
         browser.element('[class*=month-select]').click()
-        browser.element('[class*=month-select] [value="5"]').click()
-        browser.element('[class*=day--012]').click()
+        browser.element(f'[class*=month-select] [value="{int(date_formated[1]) - 1}"]').click()
+        browser.element(f'[class*=day--{date_formated[2]}]').click()
 
-    def fill_subject(self, value):
-        browser.element('#subjectsInput').click().type(value).press_tab()
+    def fill_subject(self, dataUser):
+        browser.element('#subjectsInput').click().type(dataUser.subject).press_tab()
 
-    def choice_hobbies(self):
+    def choice_hobbies(self, dataUser):
         browser.element('[for=hobbies-checkbox-1]').click()
         browser.element('[for=hobbies-checkbox-2]').click()
         browser.element('[for=hobbies-checkbox-3]').click()
 
-    def upload_img(self, img_name):
-        browser.element('[type=file]').send_keys(resource.path(img_name))
+    def upload_img(self, dataUser):
+        browser.element('[type=file]').send_keys(resource.path(dataUser.fileName))
 
-    def fill_address(self, address):
-        browser.element('#currentAddress').click().should(be.blank).type(address)
+    def fill_address(self, dataUser):
+        browser.element('#currentAddress').click().should(be.blank).type(dataUser.address)
 
-    def state_city(self, state, city):
-        browser.element('#react-select-3-input').type(state).press_enter()
-        browser.element('#react-select-4-input').type(city).press_enter()
+    def state_city(self, dataUser):
+        browser.element('#react-select-3-input').type(dataUser.state).press_enter()
+        browser.element('#react-select-4-input').type(dataUser.city).press_enter()
+
+    def open_url(self):
+        browser.open('/automation-practice-form')
 
     def click_submit(self):
         browser.element('#submit').press_enter()
 
-    def should_have_registered(self, firstName, lastName, email, gender, phoneNumber, dateBirth, subjects, hobbies,
-                               imgName, address,
-                               stateCity):
+    def register(self, dataUser):
+        self.fill_first_name(dataUser)
+        self.fill_last_name(dataUser)
+        self.fill_email(dataUser)
+        self.choice_gender(dataUser)
+        self.fill_number_phone(dataUser)
+        self.choice_birthday(dataUser)
+        self.fill_subject(dataUser)
+        self.choice_hobbies(dataUser)
+        self.upload_img(dataUser)
+        self.fill_address(dataUser)
+        self.state_city(dataUser)
+        self.click_submit()
+
+    def should_have_registered(self, dataUser):
         browser.all('tbody tr td').should(
-            have.texts('Student Name', f'{firstName} {lastName}', 'Student Email', email, 'Gender', gender, 'Mobile',
-                       phoneNumber, 'Date of Birth', dateBirth, 'Subjects', subjects,
-                       'Hobbies', hobbies, 'Picture', imgName, 'Address', address,
-                       'State and City', stateCity))
+            have.texts('Student Name', f'{dataUser.firstName} {dataUser.lastName}', 'Student Email', dataUser.email,
+                       'Gender',
+                       dataUser.gender, 'Mobile',
+                       dataUser.phoneNumber, 'Date of Birth', dataUser.dateBirth, 'Subjects', dataUser.subject,
+                       'Hobbies', dataUser.hobbies, 'Picture', dataUser.fileName, 'Address', dataUser.address,
+                       'State and City', f'{dataUser.state} {dataUser.city}'))
