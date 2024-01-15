@@ -1,3 +1,4 @@
 selene==2.0.0rc4
-pytest==7.4.3
-selenium==4.16.0
+pytest~=7.4.3
+allure-pytest
+python-dotenv

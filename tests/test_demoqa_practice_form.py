@@ -27,4 +27,4 @@ def test_fill_form(browser_config):
     browser.element('#submit').press_enter()
     browser.all('tbody tr td')[1::2].should(
         have.texts('Diana Sagaeva', 'd_sagaeva@mail.ru', 'Female', '8900555353', '12 June,2001', 'English',
-                   'Sports, Reading, Music', 'tony.jpg', 'Leningradskoe shosse', 'Haryana Panipat'))
+                   'Sports, Reading, Music', 'tony.jpg', 'Haryana Panipat', 'Leningradskoe shosse'))
